@@ -25,7 +25,7 @@ type DecryptedResult = {
 };
 
 const emptyOptions = ['', '', '', ''];
-const PLACEHOLDER_ADDRESS = '0x0000000000000000000000000000000000000000';
+// const PLACEHOLDER_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 function toUnixTimestamp(input: string): number | null {
   const ms = Date.parse(input);
@@ -198,10 +198,10 @@ export function VoteApp() {
 
   const handleCreateVote = async () => {
     setNotice(null);
-    if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
-      setNotice({ type: 'error', text: 'Update the contract address before creating a vote.' });
-      return;
-    }
+    // if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
+    //   setNotice({ type: 'error', text: 'Update the contract address before creating a vote.' });
+    //   return;
+    // }
 
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
@@ -258,10 +258,10 @@ export function VoteApp() {
 
   const handleCastVote = async (voteId: number) => {
     setNotice(null);
-    if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
-      setNotice({ type: 'error', text: 'Update the contract address before voting.' });
-      return;
-    }
+    // if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
+    //   setNotice({ type: 'error', text: 'Update the contract address before voting.' });
+    //   return;
+    // }
     if (!address) {
       setNotice({ type: 'error', text: 'Connect your wallet to cast a vote.' });
       return;
@@ -301,10 +301,10 @@ export function VoteApp() {
 
   const handleRequestResults = async (voteId: number) => {
     setNotice(null);
-    if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
-      setNotice({ type: 'error', text: 'Update the contract address before requesting results.' });
-      return;
-    }
+    // if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
+    //   setNotice({ type: 'error', text: 'Update the contract address before requesting results.' });
+    //   return;
+    // }
     if (!signerPromise) {
       setNotice({ type: 'error', text: 'Connect your wallet to request decryption.' });
       return;
@@ -327,10 +327,10 @@ export function VoteApp() {
 
   const handleDecryptResults = async (voteId: number) => {
     setNotice(null);
-    if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
-      setNotice({ type: 'error', text: 'Update the contract address before decrypting results.' });
-      return;
-    }
+    // if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
+    //   setNotice({ type: 'error', text: 'Update the contract address before decrypting results.' });
+    //   return;
+    // }
     if (!instance) {
       setNotice({ type: 'error', text: 'Encryption services are still loading.' });
       return;
@@ -380,10 +380,10 @@ export function VoteApp() {
 
   const handlePublishResults = async (voteId: number) => {
     setNotice(null);
-    if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
-      setNotice({ type: 'error', text: 'Update the contract address before publishing results.' });
-      return;
-    }
+    // if (CONTRACT_ADDRESS === PLACEHOLDER_ADDRESS) {
+    //   setNotice({ type: 'error', text: 'Update the contract address before publishing results.' });
+    //   return;
+    // }
     if (!signerPromise) {
       setNotice({ type: 'error', text: 'Connect your wallet to publish results.' });
       return;
