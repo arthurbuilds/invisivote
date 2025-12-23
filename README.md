@@ -1,110 +1,182 @@
-# FHEVM Hardhat Template
+# InvisiVote
 
-A Hardhat-based template for developing Fully Homomorphic Encryption (FHE) enabled Solidity smart contracts using the
-FHEVM protocol by Zama.
+InvisiVote is a privacy-preserving onchain voting app built on Zama FHEVM. Ballots are encrypted end-to-end, tallies are
+kept encrypted during the vote, and results are only made publicly decryptable after the voting window ends and a
+permissionless finalize step is triggered.
 
-## Quick Start
+## Overview
 
-For detailed instructions see:
-[FHEVM Hardhat Quick Start Tutorial](https://docs.zama.ai/protocol/solidity-guides/getting-started/quick-start-tutorial)
+InvisiVote enables anyone to create a vote with 2-4 options and a fixed time window. Voters submit encrypted choices
+so neither the contract nor observers can see individual selections or intermediate counts. When the vote ends, anyone
+can request decryption, and anyone can publish the decrypted results with a Zama verification proof so the final tally
+is auditable onchain.
+
+## Problems It Solves
+
+- **Ballot privacy on public chains**: Standard onchain voting exposes choices and enables coercion or bribery. InvisiVote
+  keeps ballots and interim tallies encrypted.
+- **Early results leakage**: Traditional systems leak partial results that can bias turnout. InvisiVote keeps tallies
+  encrypted until the end.
+- **Trust in offchain tallying**: Offchain counting requires trusting a server or operator. InvisiVote verifies decrypted
+  results onchain using Zama proofs.
+- **Censorship risk**: Finalization is permissionless; any user can trigger decryption and publish results after the end.
+
+## Advantages
+
+- **End-to-end encrypted voting** using Fully Homomorphic Encryption (FHE) onchain.
+- **Public, verifiable results** with cryptographic proof of correctness.
+- **No plaintext ballots** stored onchain at any time.
+- **Permissionless finalization** after the voting window ends.
+- **Simple constraints** (2-4 options, timeboxed voting) enable predictable UX and auditing.
+
+## Core Features
+
+- Create votes with title, 2-4 options, start time, and end time.
+- Cast encrypted ballots that are aggregated homomorphically.
+- View encrypted tallies without revealing any counts before finalization.
+- Request public decryption after voting ends.
+- Publish verified results onchain.
+
+## How It Works (High-Level Flow)
+
+1. **Create vote**: The contract stores metadata and initializes encrypted counters.
+2. **Cast vote**: The client encrypts the option index using the Zama relayer SDK; the contract adds it to encrypted
+   counters with FHE operations.
+3. **Request decryption**: After `endTime`, anyone can call `requestResultsDecryption` to mark counts publicly
+   decryptable.
+4. **Publish results**: Anyone submits the decrypted counts plus a Zama decryption proof via `publishResults`. The
+   contract verifies the proof and stores the clear counts.
+
+## Tech Stack
+
+- **Smart contracts**: Solidity, Hardhat, Zama FHEVM (`@fhevm/solidity`)
+- **Deployment & tasks**: Hardhat Deploy + custom tasks in `tasks/`
+- **Frontend**: React + Vite, RainbowKit, viem (reads), ethers (writes), vanilla CSS
+- **Encryption**: `@zama-fhe/relayer-sdk`
+
+## Project Structure
+
+```
+.
+├── contracts/            # Solidity contracts
+├── deploy/               # Deployment scripts
+├── tasks/                # Hardhat tasks for CLI usage
+├── test/                 # Tests
+├── deployments/          # Network artifacts (ABI and addresses)
+├── src/                  # Frontend (React + Vite)
+└── hardhat.config.ts     # Hardhat configuration
+```
+
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js**: Version 20 or higher
-- **npm or yarn/pnpm**: Package manager
+- **Node.js** 20+
+- **npm**
+- **Sepolia ETH** for deployment and testing
+- **Infura API key**
+- **Wallet private key** (use `PRIVATE_KEY`, not a mnemonic)
 
-### Installation
+### Install Dependencies
 
-1. **Install dependencies**
+From the repo root:
 
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables**
-
-   ```bash
-   npx hardhat vars set MNEMONIC
-
-   # Set your Infura API key for network access
-   npx hardhat vars set INFURA_API_KEY
-
-   # Optional: Set Etherscan API key for contract verification
-   npx hardhat vars set ETHERSCAN_API_KEY
-   ```
-
-3. **Compile and test**
-
-   ```bash
-   npm run compile
-   npm run test
-   ```
-
-4. **Deploy to local network**
-
-   ```bash
-   # Start a local FHEVM-ready node
-   npx hardhat node
-   # Deploy to local network
-   npx hardhat deploy --network localhost
-   ```
-
-5. **Deploy to Sepolia Testnet**
-
-   ```bash
-   # Deploy to Sepolia
-   npx hardhat deploy --network sepolia
-   # Verify contract on Etherscan
-   npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
-   ```
-
-6. **Test on Sepolia Testnet**
-
-   ```bash
-   # Once deployed, you can run a simple test on Sepolia.
-   npx hardhat test --network sepolia
-   ```
-
-## 📁 Project Structure
-
-```
-fhevm-hardhat-template/
-├── contracts/           # Smart contract source files
-│   └── FHECounter.sol   # Example FHE counter contract
-├── deploy/              # Deployment scripts
-├── tasks/               # Hardhat custom tasks
-├── test/                # Test files
-├── hardhat.config.ts    # Hardhat configuration
-└── package.json         # Dependencies and scripts
+```bash
+npm install
 ```
 
-## 📜 Available Scripts
+From the frontend folder:
 
-| Script             | Description              |
-| ------------------ | ------------------------ |
-| `npm run compile`  | Compile all contracts    |
-| `npm run test`     | Run all tests            |
-| `npm run coverage` | Generate coverage report |
-| `npm run lint`     | Run linting checks       |
-| `npm run clean`    | Clean build artifacts    |
+```bash
+cd src
+npm install
+```
 
-## 📚 Documentation
+### Environment Configuration (Contracts Only)
 
-- [FHEVM Documentation](https://docs.zama.ai/fhevm)
-- [FHEVM Hardhat Setup Guide](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup)
-- [FHEVM Testing Guide](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/write_test)
-- [FHEVM Hardhat Plugin](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat)
+Create a `.env` file in the repo root:
 
-## 📄 License
+```bash
+INFURA_API_KEY=your_infura_key
+PRIVATE_KEY=0xyour_private_key
+ETHERSCAN_API_KEY=optional_for_verification
+```
 
-This project is licensed under the BSD-3-Clause-Clear License. See the [LICENSE](LICENSE) file for details.
+### Compile and Test
 
-## 🆘 Support
+```bash
+npm run compile
+npm run test
+```
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zama-ai/fhevm/issues)
-- **Documentation**: [FHEVM Docs](https://docs.zama.ai)
-- **Community**: [Zama Discord](https://discord.gg/zama)
+### Local Development (Contracts)
 
----
+Local execution is useful for contract testing and tasks. The UI targets Sepolia.
 
-**Built with ❤️ by the Zama team**
+```bash
+npm run chain
+npm run deploy:localhost
+```
+
+### Deploy to Sepolia
+
+```bash
+npm run deploy:sepolia
+```
+
+Optional verification:
+
+```bash
+npm run verify:sepolia -- <DEPLOYED_CONTRACT_ADDRESS>
+```
+
+### Hardhat Tasks (Examples)
+
+```bash
+npx hardhat --network sepolia task:address
+npx hardhat --network sepolia task:create-vote --title "Best city" --options "NYC,Paris,Tokyo" --start 1735689600 --end 1735696800
+npx hardhat --network sepolia task:vote --voteid 1 --option 0
+npx hardhat --network sepolia task:request-results --voteid 1
+```
+
+### Frontend Setup
+
+1. Update contract address and ABI in `src/src/config/contracts.ts`.
+   - Copy the ABI from `deployments/sepolia/InvisiVote.json`.
+   - This project does not use frontend environment variables.
+2. Run the UI:
+
+```bash
+cd src
+npm run dev
+```
+
+## ABI and Address Management
+
+- The canonical ABI is generated by Hardhat and stored under `deployments/sepolia`.
+- The frontend imports the ABI directly into `src/src/config/contracts.ts` (no JSON files in the UI codebase).
+
+## Security and Privacy Notes
+
+- Individual ballots and intermediate counts remain encrypted onchain.
+- Only after `endTime` and a decryption request are results made publicly decryptable.
+- Final results are verified onchain using Zama proof verification.
+- This project does not collect or store personal identity data.
+
+## Documentation
+
+- Zama FHEVM docs: `docs/zama_llm.md`
+- Zama relayer docs: `docs/zama_doc_relayer.md`
+
+## Future Plans
+
+- **Better governance UX**: bulk vote creation, templates, and vote previews.
+- **Stronger audit tooling**: exportable proofs and deterministic replay tools.
+- **Additional voting models**: ranked choice, weighted voting, and quorum rules.
+- **Multi-chain deployments**: support for additional FHEVM-enabled networks.
+- **Accessibility improvements**: keyboard-first flows and clearer time zone handling.
+- **Performance tuning**: reduce relayer round-trips and optimize FHE operations.
+
+## License
+
+BSD-3-Clause-Clear. See `LICENSE`.
